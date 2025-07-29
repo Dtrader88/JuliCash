@@ -1,0 +1,293 @@
+body {
+    background: #10121a;
+    color: #e8f9ff;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    padding-bottom: 80px;
+}
+.container {
+    max-width: 440px;
+    margin: 34px auto 0 auto;
+    padding: 16px 8px 30px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.pantalla {
+    display: none;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+.pantalla.active {
+    display: flex;
+}
+.tarjeta {
+    margin: 0 auto;
+    background: #191a2c;
+    border-radius: 20px;
+    box-shadow: 0 0 32px #24fce67a, 0 0 0 1.5px #26ffe640;
+    padding: 26px 12px 22px 12px;
+    min-width: 260px;
+    max-width: 390px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 18px;
+}
+.tarjeta h1, .tarjeta h2 {
+    margin: 0 0 12px 0;
+    color: #24fce6;
+    font-size: 2.0rem;
+    letter-spacing: 1.3px;
+    text-shadow: 0 0 10px #24fce6, 0 0 2px #e6e6e6;
+}
+.tarjeta h3 {
+    margin: 10px 0 18px 0;
+    font-size: 1.23rem;
+    color: #fcff64;
+    text-shadow: 0 0 7px #fcff64ad;
+}
+.tarjeta .kpi {
+    font-size: 1.1rem;
+    margin: 7px 0 0 0;
+    color: #82ffe2;
+    font-weight: 500;
+    text-shadow: 0 0 5px #26ffe663;
+}
+.tarjeta .kpi .label {
+    color: #fafbffbb;
+    margin-right: 5px;
+}
+.tarjeta .kpi.important {
+    font-size: 1.16rem;
+    color: #fcff64;
+    margin-top: 18px;
+    font-weight: bold;
+    text-shadow: 0 0 11px #f3f966be;
+}
+.step {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+}
+.step.active {
+    display: flex;
+}
+label {
+    margin-top: 13px;
+    font-size: 1.09rem;
+    color: #88ffef;
+    align-self: flex-start;
+}
+input, select {
+    margin-top: 8px;
+    padding: 11px;
+    font-size: 1.11rem;
+    border-radius: 8px;
+    border: none;
+    background: #23243a;
+    color: #fafffa;
+    outline: none;
+    width: 100%;
+    max-width: 280px;
+    box-shadow: 0 0 7px #3ff6eb25;
+}
+input:focus {
+    box-shadow: 0 0 8px #26ffe6, 0 0 0 2px #1e5852;
+}
+.wizard-buttons {
+    margin-top: 23px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 280px;
+}
+button, .boton-neon {
+    background: linear-gradient(90deg, #26ffe6, #0ac1ff 70%);
+    color: #181928;
+    font-size: 1.07rem;
+    padding: 9px 15px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 0 12px #21fdc68e;
+    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+    margin: 4px 0;
+}
+button:active, .boton-neon:active {
+    background: linear-gradient(90deg, #0ac1ff, #26ffe6 70%);
+    color: #fff;
+}
+.boton-neon-sec {
+    background: linear-gradient(90deg, #fcff64, #ff6e40 85%);
+    color: #191919;
+    margin-left: 7px;
+    box-shadow: 0 0 9px #fcff648c;
+}
+.ganancia {
+    margin: 12px 0 4px 0;
+    font-size: 1.13rem;
+    color: #fcff64;
+    font-weight: bold;
+    letter-spacing: 1.1px;
+    text-align: center;
+    text-shadow: 0 0 9px #f3f9666a;
+}
+/* Menú inferior */
+.menu-inferior {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    width: 100vw;
+    max-width: 440px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-around;
+    background: #181a2ecc;
+    box-shadow: 0 0 18px #26ffe655;
+    border-radius: 18px 18px 0 0;
+    z-index: 100;
+    height: 60px;
+    align-items: center;
+    backdrop-filter: blur(2px);
+}
+.menu-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #8bfff8;
+    font-size: 1.26rem;
+    transition: color 0.2s;
+    position: relative;
+}
+.menu-btn.active {
+    color: #26ffe6;
+    text-shadow: 0 0 8px #26ffe6, 0 0 17px #26ffe6a8;
+}
+.menu-btn .icon {
+    font-size: 1.35rem;
+    margin-bottom: 2px;
+}
+/* Historial tabla */
+.tabla-historial {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+    min-width: 410px;
+    max-width: 100%;
+}
+.tabla-historial th, .tabla-historial td {
+    border-bottom: 1px solid #262a3a;
+    padding: 6px 2px;
+    text-align: center;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    max-width: 85px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tabla-historial th {
+    color: #26ffe6;
+    font-weight: 500;
+    font-size: 0.97rem;
+    background: #181d29;
+    text-shadow: 0 0 6px #25e2e7a6;
+}
+.tabla-historial td {
+    color: #fcfffd;
+}
+.tabla-historial .conciliada {
+    background: #2af78a22;
+    color: #72ffae;
+    font-weight: 600;
+}
+.tabla-historial .conciliada:after {
+    content: "✔️";
+    font-size: 0.95em;
+    margin-left: 2px;
+}
+/* Clientes */
+.lista-clientes {
+    margin: 8px 0 0 0;
+    padding: 0;
+    list-style: none;
+    width: 100%;
+    max-width: 340px;
+}
+.lista-clientes li {
+    margin: 0 0 6px 0;
+    padding: 10px 14px;
+    background: #232441;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.01rem;
+    box-shadow: 0 0 6px #28ffec2c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.lista-clientes .label {
+    color: #26ffe6;
+    margin-right: 7px;
+}
+/* Modal Conciliación */
+.modal {
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: #000000d8;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    background: #20234a;
+    border-radius: 20px;
+    padding: 28px 16px 18px 16px;
+    box-shadow: 0 0 40px #3fffb3b9;
+    min-width: 270px;
+    max-width: 97vw;
+    color: #fcfffd;
+    position: relative;
+    text-align: center;
+}
+.modal-content input[type="date"] {
+    margin: 9px 0 16px 0;
+    background: #181928;
+    box-shadow: 0 0 7px #26ffe622;
+}
+.modal-close {
+    position: absolute;
+    top: 7px; right: 12px;
+    font-size: 1.45rem;
+    color: #26ffe6;
+    cursor: pointer;
+}
+@media (max-width: 520px) {
+    .container {
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        min-height: 100vh;
+        padding-bottom: 40px;
+    }
+    .menu-inferior {
+        border-radius: 0;
+        max-width: 100vw;
+    }
+    .tarjeta {
+        max-width: 99vw;
+        min-width: 0;
+        padding: 16px 3vw 14px 3vw;
+    }
+    .tabla-historial {
+        min-width: 340px;
+        font-size: 0.89rem;
+    }
+}

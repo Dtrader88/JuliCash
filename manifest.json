@@ -1,0 +1,16 @@
+{
+  "name": "JuliCash",
+  "short_name": "JuliCash",
+  "description": "Control de Remesas para Julio",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#10121a",
+  "theme_color": "#24fce6",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
