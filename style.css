@@ -332,3 +332,27 @@ button:active, .boton-neon:active {
     background: #26ffe63f;
     border-radius: 4px;
 }
+.historial-acciones {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #232447;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.boton-accion, .boton-accion-eliminar {
+    background: #232441;
+    color: #26ffe6;
+    font-size: 0.9rem;
+    padding: 5px 12px;
+    border: 1px solid #26ffe655;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.boton-accion-eliminar {
+    color: #f76b6b;
+    border-color: #f76b6b55;
+}
