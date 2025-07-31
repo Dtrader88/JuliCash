@@ -27,7 +27,7 @@ body {
     background: #191a2c;
     border-radius: 20px;
     box-shadow: 0 0 32px #24fce67a, 0 0 0 1.5px #26ffe640;
-    padding: 26px 12px 22px 12px;
+    padding: 28px 20px 24px 20px;
     min-width: 260px;
     max-width: 390px;
     text-align: center;
@@ -76,7 +76,7 @@ body {
     display: flex;
 }
 label {
-    margin-top: 13px;
+    margin-top: 18px;
     font-size: 1.09rem;
     color: #88ffef;
     align-self: flex-start;
@@ -173,7 +173,6 @@ button:active, .boton-neon:active {
     font-size: 1.35rem;
     margin-bottom: 2px;
 }
-/* Clientes */
 .lista-clientes {
     margin: 8px 0 0 0;
     padding: 0;
@@ -197,7 +196,6 @@ button:active, .boton-neon:active {
     color: #26ffe6;
     margin-right: 7px;
 }
-/* HISTORIAL - Tarjetas */
 .historial-card {
     background: #191a2c;
     border-radius: 18px;
@@ -291,7 +289,6 @@ button:active, .boton-neon:active {
         padding: 6px 2px;
     }
 }
-/* Modales */
 .modal {
     position: fixed;
     z-index: 2500;
@@ -340,7 +337,6 @@ button:active, .boton-neon:active {
     justify-content: flex-end;
     gap: 10px;
 }
-
 .boton-accion, .boton-accion-eliminar {
     background: #232441;
     color: #26ffe6;
@@ -351,8 +347,24 @@ button:active, .boton-neon:active {
     cursor: pointer;
     font-weight: 500;
 }
-
 .boton-accion-eliminar {
     color: #f76b6b;
     border-color: #f76b6b55;
+}
+.toast {
+    position: fixed;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, #26ffe6, #0ac1ff);
+    color: #181928;
+    padding: 12px 22px;
+    border-radius: 10px;
+    z-index: 3000;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(36, 252, 230, 0.4);
+    transition: bottom 0.5s ease;
+}
+.toast.show {
+    bottom: 80px;
 }
