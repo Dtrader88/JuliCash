@@ -2,7 +2,7 @@
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open('julicash-v3').then(cache => { // <-- EL CAMBIO ESTÁ AQUÍ
+    caches.open('julicash-v1').then(cache => { // <-- EL CAMBIO ESTÁ AQUÍ
       return cache.addAll([
         '/',
         '/index.html',
