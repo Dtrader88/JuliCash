@@ -368,3 +368,21 @@ button:active, .boton-neon:active {
 .toast.show {
     bottom: 80px;
 }
+.danger-zone {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #ff6e4055;
+    width: 100%;
+    max-width: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Helper para alinear los iconos en los botones del menú y otros */
+.menu-btn > .feather, .boton-neon > .feather, .boton-neon-sec > .feather {
+    width: 20px;
+    height: 20px;
+    vertical-align: text-bottom;
+    margin-right: 8px;
+}
