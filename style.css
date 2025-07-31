@@ -161,17 +161,26 @@ button:active, .boton-neon:active {
     justify-content: center;
     cursor: pointer;
     color: #8bfff8;
-    font-size: 1.26rem;
     transition: color 0.2s;
     position: relative;
+    padding: 8px 0;
+    gap: 4px;
+}
+.menu-btn span {
+    display: none;
+    font-size: 0.7rem;
+    font-weight: 500;
 }
 .menu-btn.active {
     color: #26ffe6;
     text-shadow: 0 0 8px #26ffe6, 0 0 17px #26ffe6a8;
 }
-.menu-btn .icon {
-    font-size: 1.35rem;
-    margin-bottom: 2px;
+.menu-btn.active span {
+    display: inline;
+}
+.menu-btn > .feather {
+    width: 24px;
+    height: 24px;
 }
 .lista-clientes {
     margin: 8px 0 0 0;
@@ -378,8 +387,6 @@ button:active, .boton-neon:active {
     flex-direction: column;
     align-items: center;
 }
-
-/* Helper para alinear los iconos en los botones del menú y otros */
 .menu-btn > .feather, .boton-neon > .feather, .boton-neon-sec > .feather {
     width: 20px;
     height: 20px;
