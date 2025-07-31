@@ -1,9 +1,12 @@
+// ---- REEMPLAZA EL CONTENIDO COMPLETO DE service-worker.js CON ESTO ----
+
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open('julicash-v1').then(cache => {
+    caches.open('julicash-v2').then(cache => { // <-- EL CAMBIO ESTÁ AQUÍ
       return cache.addAll([
         '/',
         '/index.html',
+        'style.css', // <-- IMPORTANTE: Añadimos style.css al caché
         '/manifest.json',
         '/icon.png'
       ]);
