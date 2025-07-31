@@ -162,38 +162,42 @@
         }
 
         function renderHistorial(datos = null, append = false) {
-            let historial = datos || JSON.parse(localStorage.getItem('juli_remesas') || '[]');
-            if (!datos) {
-                historialCardsFiltrado = null;
-                historial = historial.slice(-CARDS_PER_PAGE * historialCardsPage);
-            } else {
-                historialCardsFiltrado = historial;
-                historial = historial.slice(-(CARDS_PER_PAGE * historialCardsPage));
-            }
-            if (historial.length === 0) {
-                document.getElementById('tablaHistorialCont').innerHTML = "<div style='color:#ccc;text-align:center;margin-top:8px;'>No hay remesas registradas.</div>";
-                return;
-            }
-            let html = "";
-            historial.slice().reverse().forEach(rem => {
-                html += `<div class="historial-card">
-                    <div class="fecha">${formatearFecha(rem.fecha)}</div>
-                    <div class="historial-row"><span class="historial-label">Envia</span><span>${rem.envia || ''}</span><span class="historial-cantidad">$${rem.montoRecibido !== undefined ? rem.montoRecibido.toFixed(2) : ''}</span></div>
-                    <div class="historial-row"><span class="historial-label">Recibe</span><span>${rem.recibe || ''}</span><span class="historial-cantidad">$${rem.montoEntregado !== undefined ? rem.montoEntregado.toFixed(2) : ''}</span></div>
-                    <div class="historial-ganancia">Ganancia: $${rem.ganancia !== undefined ? rem.ganancia.toFixed(2) : ''}</div>
-                    ${rem.conciliada ? '<span class="historial-check">✔️</span>' : ''}
-                </div>`;
-            });
+    let historial = datos || JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+    if (!datos) {
+        historialCardsFiltrado = null;
+        historial = historial.slice(-CARDS_PER_PAGE * historialCardsPage);
+    } else {
+        historialCardsFiltrado = historial;
+        historial = historial.slice(-(CARDS_PER_PAGE * historialCardsPage));
+    }
+    if (historial.length === 0) {
+        document.getElementById('tablaHistorialCont').innerHTML = "<div style='color:#ccc;text-align:center;margin-top:8px;'>No hay remesas registradas.</div>";
+        return;
+    }
+    let html = "";
+    historial.slice().reverse().forEach(rem => {
+        html += `<div class="historial-card">
+            ${rem.conciliada ? '<span class="historial-check">✔️</span>' : ''}
+            <div class="fecha">${formatearFecha(rem.fecha)}</div>
+            <div class="historial-row"><span class="historial-label">Envia</span><span>${rem.envia || ''}</span><span class="historial-cantidad">$${rem.montoRecibido !== undefined ? rem.montoRecibido.toFixed(2) : ''}</span></div>
+            <div class="historial-row"><span class="historial-label">Recibe</span><span>${rem.recibe || ''}</span><span class="historial-cantidad">$${rem.montoEntregado !== undefined ? rem.montoEntregado.toFixed(2) : ''}</span></div>
+            <div class="historial-ganancia">Ganancia: $${rem.ganancia !== undefined ? rem.ganancia.toFixed(2) : ''}</div>
+            <div class="historial-acciones">
+                <button class="boton-accion" onclick="iniciarEdicion(${rem.id})">✏️ Editar</button>
+                <button class="boton-accion-eliminar" onclick="eliminarRemesa(${rem.id})">🗑️ Eliminar</button>
+            </div>
+        </div>`;
+    });
 
-            let totalRemesas = datos ? datos.length : JSON.parse(localStorage.getItem('juli_remesas') || '[]').length;
-            let hayMas = (historialCardsPage * CARDS_PER_PAGE) < totalRemesas;
+    let totalRemesas = datos ? datos.length : JSON.parse(localStorage.getItem('juli_remesas') || '[]').length;
+    let hayMas = (historialCardsPage * CARDS_PER_PAGE) < totalRemesas;
 
-            html += hayMas
-                ? `<button class="boton-neon" style="width:100%;margin-top:5px;" onclick="verMasHistorial()">Ver más</button>`
-                : '';
+    html += hayMas
+        ? `<button class="boton-neon" style="width:100%;margin-top:5px;" onclick="verMasHistorial()">Ver más</button>`
+        : '';
 
-            document.getElementById('tablaHistorialCont').innerHTML = html;
-        }
+    document.getElementById('tablaHistorialCont').innerHTML = html;
+}
 
         function verMasHistorial() {
             historialCardsPage++;
@@ -273,33 +277,105 @@
             info.textContent = `Ganancia final de la operación: $${ganancia.toFixed(2)}`;
         }
         function guardarRemesa() {
-            const fecha = document.getElementById('fecha').value;
-            const remitente = document.getElementById('remitente').value.trim();
-            const montoRecibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
-            const destinatario = document.getElementById('destinatario').value.trim();
-            const montoEntregado = parseFloat(document.getElementById('montoEntregado').value) || 0;
-            const ganancia = montoRecibido - montoEntregado;
-            if (!fecha || !remitente || !destinatario || montoRecibido <= 0 || montoEntregado <= 0) {
-                alert("Completa todos los campos correctamente.");
-                return;
-            }
-            const remesa = {
+    const fecha = document.getElementById('fecha').value;
+    const remitente = document.getElementById('remitente').value.trim();
+    const montoRecibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
+    const destinatario = document.getElementById('destinatario').value.trim();
+    const montoEntregado = parseFloat(document.getElementById('montoEntregado').value) || 0;
+    const ganancia = montoRecibido - montoEntregado;
+
+    if (!fecha || !remitente || !destinatario || montoRecibido <= 0 || montoEntregado <= 0) {
+        alert("Completa todos los campos correctamente.");
+        return;
+    }
+
+    let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+
+    if (idRemesaEditando !== null) {
+        // --- MODO EDICIÓN ---
+        const index = historial.findIndex(r => r.id === idRemesaEditando);
+        if (index !== -1) {
+            historial[index] = {
+                ...historial[index], // Mantenemos propiedades como 'conciliada' y el 'id' original
                 fecha,
                 envia: remitente,
                 recibe: destinatario,
                 montoRecibido,
                 montoEntregado,
                 ganancia,
-                conciliada: false,
-                id: Date.now()
             };
-            let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
-            historial.push(remesa);
-            localStorage.setItem('juli_remesas', JSON.stringify(historial));
-            agregarCliente(remitente);
-            alert('¡Remesa registrada con éxito!');
-            window.location.reload();
+            alert('¡Remesa actualizada con éxito!');
         }
+    } else {
+        // --- MODO CREACIÓN (como estaba antes) ---
+        const remesa = {
+            fecha,
+            envia: remitente,
+            recibe: destinatario,
+            montoRecibido,
+            montoEntregado,
+            ganancia,
+            conciliada: false,
+            id: Date.now()
+        };
+        historial.push(remesa);
+        alert('¡Remesa registrada con éxito!');
+    }
+
+    localStorage.setItem('juli_remesas', JSON.stringify(historial));
+    agregarCliente(remitente);
+
+    // Reseteamos el estado de edición
+    idRemesaEditando = null;
+    document.querySelector('#step-6 button').textContent = 'Guardar remesa';
+    document.getElementById('remesaForm').reset();
+    document.getElementById('fecha').valueAsDate = new Date();
+    
+    // Llevamos al dashboard
+    mostrarPantalla('dashboard');
+}
+let idRemesaEditando = null;
+
+function eliminarRemesa(id) {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta remesa? Esta acción no se puede deshacer.')) {
+        return;
+    }
+    let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+    const nuevoHistorial = historial.filter(remesa => remesa.id !== id);
+    localStorage.setItem('juli_remesas', JSON.stringify(nuevoHistorial));
+    
+    alert('Remesa eliminada con éxito.');
+    if (historialCardsFiltrado) {
+        filtrarHistorial(); // Re-filtra para actualizar la vista si hay un filtro activo
+    } else {
+        renderHistorial();
+    }
+    renderDashboard();
+}
+
+function iniciarEdicion(id) {
+    let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+    const remesa = historial.find(r => r.id === id);
+
+    if (!remesa) {
+        alert('Error: No se encontró la remesa.');
+        return;
+    }
+
+    idRemesaEditando = id;
+
+    document.getElementById('fecha').value = remesa.fecha;
+    document.getElementById('remitente').value = remesa.envia;
+    document.getElementById('montoRecibido').value = remesa.montoRecibido;
+    document.getElementById('destinatario').value = remesa.recibe;
+    document.getElementById('montoEntregado').value = remesa.montoEntregado;
+
+    document.querySelector('#step-6 button').textContent = 'Actualizar remesa';
+    
+    mostrarPantalla('registro');
+    step = 1;
+    showStep();
+}
         function mostrarPantalla(nombre) {
             document.querySelectorAll('.pantalla').forEach(div => div.classList.remove('active'));
             document.getElementById('pantalla-' + nombre).classList.add('active');
