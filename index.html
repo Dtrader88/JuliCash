@@ -11,23 +11,38 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="style.css">
-     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
         <div class="pantalla active" id="pantalla-dashboard">
             <div class="tarjeta" style="margin-top:34px;">
                 <h1 style="margin-bottom: 9px;">JuliCash</h1>
+                <div id="theme-toggle-icon" onclick="toggleTheme()">
+                <i data-feather="sun"></i>
+                </div>
                 <h3 id="dash-mes"></h3>
                 <div class="kpi"><span class="label">Remesas del mes:</span> <span id="dash-cant"></span></div>
                 <div class="kpi"><span class="label">Total recibido:</span> $<span id="dash-recibido"></span></div>
                 <div class="kpi"><span class="label">Total entregado:</span> $<span id="dash-entregado"></span></div>
                 <div class="kpi important"><span class="label">Ganancia:</span> $<span id="dash-ganancia"></span></div>
+                <div class="chart-container">
+                    <canvas id="gananciasChart"></canvas>
+                </div>
             </div>
         </div>
         <div class="pantalla" id="pantalla-registro">
             <div class="tarjeta">
                 <form id="remesaForm" autocomplete="off">
+                    <div class="wizard-steps">
+                        <div class="step-indicator active" id="indicator-1"></div>
+                        <div class="step-indicator" id="indicator-2"></div>
+                        <div class="step-indicator" id="indicator-3"></div>
+                        <div class="step-indicator" id="indicator-4"></div>
+                        <div class="step-indicator" id="indicator-5"></div>
+                        <div class="step-indicator" id="indicator-6"></div>
+                    </div>
                     <div class="step active" id="step-1">
                         <label>Fecha</label>
                         <input type="date" id="fecha" value="">
@@ -37,7 +52,7 @@
                     </div>
                     <div class="step" id="step-2">
                         <label>Envia (quién envía)</label>
-                        <input type="text" id="remitente" placeholder="Nombre de quien envía">
+                        <input type="text" id="remitente" placeholder="Nombre de quien envía" onblur="actualizarSugerenciasDestinatarios()">
                         <div class="wizard-buttons">
                             <button type="button" onclick="prevStep()">Atrás</button>
                             <button type="button" onclick="nextStep()">Siguiente</button>
@@ -53,7 +68,8 @@
                     </div>
                     <div class="step" id="step-4">
                         <label>Recibe (quién recibe)</label>
-                        <input type="text" id="destinatario" placeholder="Nombre de quien recibe">
+                        <input type="text" id="destinatario" placeholder="Nombre de quien recibe" list="destinatarios-sugeridos">
+                        <datalist id="destinatarios-sugeridos"></datalist>
                         <div class="wizard-buttons">
                             <button type="button" onclick="prevStep()">Atrás</button>
                             <button type="button" onclick="nextStep()">Siguiente</button>
@@ -79,7 +95,7 @@
         </div>
         <div class="pantalla" id="pantalla-historial">
             <div class="tarjeta" style="padding:18px 5px 12px 5px; max-width:390px;">
-                <h2 style="color:#fcff64;font-size:1.13rem;margin:4px 0 10px 0;">Historial de Remesas</h2>
+                <h2 class="titulo-secundario">Historial de Remesas</h2>
                 <div style="display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;justify-content:center;margin-bottom:10px;font-size:0.93rem;">
                     <input type="text" id="filtroRemitente" list="clientesAuto" placeholder="Buscar Envia..." style="width:90px;">
                     <datalist id="clientesAuto"></datalist>
@@ -93,13 +109,13 @@
         </div>
         <div class="pantalla" id="pantalla-clientes">
             <div class="tarjeta">
-                <h2 style="color:#3effd7;font-size:1.13rem;margin:4px 0 8px 0;">Clientes Frecuentes</h2>
+                <h2>Clientes Frecuentes</h2>
                 <ul class="lista-clientes" id="listaClientes"></ul>
             </div>
         </div>
         <div class="pantalla" id="pantalla-conciliacion">
             <div class="tarjeta">
-                <h2 style="color:#f3ff8a;font-size:1.08rem;margin:4px 0 8px 0;">Conciliar remesas</h2>
+                <h2 class="titulo-secundario">Conciliar remesas</h2>
                 <label for="fechaIniC">Desde:</label>
                 <input type="date" id="fechaIniC">
                 <label for="fechaFinC">Hasta:</label>
@@ -109,32 +125,40 @@
                 <button class="boton-neon boton-neon-sec" style="margin-top:15px;" onclick="abrirVerConciliaciones()">Ver conciliaciones</button>
             </div>
         </div>
-    <div class="pantalla" id="pantalla-ajustes">
-    <div class="tarjeta">
-        <h2 style="color:#82ffe2;font-size:1.2rem;margin:4px 0 15px 0;">Gestión de Datos</h2>
-        
-        <p style="font-size: 0.95rem; max-width: 300px; color: #fafbffbb; margin-bottom: 25px; line-height: 1.4;">
-            Crea una copia de seguridad de todos tus datos en un archivo, o restaura la aplicación desde una copia anterior.
-        </p>
-
-        <button class="boton-neon" onclick="exportarDatos()" style="width: 100%; max-width: 280px;">
-            <i data-feather="download"></i>
-            Exportar Copia de Seguridad
-        </button>
-        
-        <div class="danger-zone">
-            <p style="font-size: 0.9rem; max-width: 300px; color: #ffc0c0; margin-bottom: 10px;">
-                <strong>¡Atención!</strong> Importar un archivo reemplazará TODOS los datos actuales de la aplicación de forma irreversible.
-            </p>
-            <button class="boton-neon boton-neon-sec" onclick="iniciarImportacion()" style="width: 100%; max-width: 280px;">
-                 <i data-feather="upload"></i>
-                Importar desde Archivo
-            </button>
+        <div class="pantalla" id="pantalla-ajustes">
+            <div class="tarjeta">
+                <h2>Gestión de Datos</h2>
+                <p class="texto-descriptivo">
+    Crea una copia de seguridad de todos tus datos en un archivo, o restaura la aplicación desde una copia anterior.
+</p>
+                <button class="boton-neon" onclick="exportarDatos()" style="width: 100%; max-width: 280px;">
+                    <i data-feather="download"></i>
+                    Exportar Copia de Seguridad
+                </button>
+                <div class="danger-zone">
+                    <p style="font-size: 0.9rem; max-width: 300px; color: #ffc0c0; margin-bottom: 10px;">
+                        <strong>¡Atención!</strong> Importar un archivo reemplazará TODOS los datos actuales de la aplicación de forma irreversible.
+                    </p>
+                    <button class="boton-neon boton-neon-sec" onclick="iniciarImportacion()" style="width: 100%; max-width: 280px;">
+                         <i data-feather="upload"></i>
+                        Importar desde Archivo
+                    </button>
+                </div>
+                    <div class="contacts-zone">
+                    <h3 class="titulo-secundario">Gestión de Contactos</h3>
+                    <p class="texto-descriptivo">
+    Añade o edita los números de teléfono de tus clientes (quienes envían) y sus destinatarios.
+</p>
+                    <button class="boton-neon" onclick="abrirModalContactos()" style="width: 100%; max-width: 280px;">
+                         <i data-feather="book-open"></i>
+                        Ver Mis Contactos
+                    </button>
+                </div>
+                <input type="file" id="importadorArchivo" accept=".json" style="display: none;">
+            </div>
         </div>
-        <!-- Este input está oculto, es para que el botón de arriba funcione -->
-        <input type="file" id="importadorArchivo" accept=".json" style="display: none;">
     </div>
-</div>
+
     <div id="modalVerConciliaciones" class="modal" style="display:none;">
         <div class="modal-content">
             <div class="modal-close" onclick="cerrarModalVerConciliaciones()">✖</div>
@@ -142,8 +166,17 @@
             <div id="listaConciliacionesCont"></div>
         </div>
     </div>
+
+    <div id="modalContactos" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-close" onclick="cerrarModalContactos()">✖</div>
+            <div id="listaContactosCont"></div>
+            <div id="detalleContactoCont" style="display:none;"></div>
+        </div>
+    </div>
+
     <div class="menu-inferior">
-        <div class="menu-btn active" id="menu-dashboard" onclick="mostrarPantalla('dashboard')">
+        <div class="menu-btn active" id="menu-dashboard" onclick="renderDashboard(); mostrarPantalla('dashboard')">
             <i data-feather="home"></i>
             <span>Inicio</span>
         </div>
@@ -151,11 +184,11 @@
             <i data-feather="edit-3"></i>
             <span>Remesa</span>
         </div>
-        <div class="menu-btn" id="menu-historial" onclick="mostrarPantalla('historial')">
+        <div class="menu-btn" id="menu-historial" onclick="mostrarUltimas5(); mostrarPantalla('historial')">
             <i data-feather="archive"></i>
             <span>Historial</span>
         </div>
-        <div class="menu-btn" id="menu-clientes" onclick="mostrarPantalla('clientes')">
+        <div class="menu-btn" id="menu-clientes" onclick="renderClientes(); mostrarPantalla('clientes')">
             <i data-feather="users"></i>
             <span>Clientes</span>
         </div>
@@ -164,16 +197,25 @@
             <span>Conciliar</span>
         </div>
         <div class="menu-btn" id="menu-ajustes" onclick="mostrarPantalla('ajustes')">
-        <i data-feather="settings"></i>
-        <span>Ajustes</span>
+            <i data-feather="settings"></i>
+            <span>Ajustes</span>
+        </div>
     </div>
-</div>
+
     <div id="toast" class="toast">Mensaje</div>
+
     <script>
+        (function() {
+    const savedTheme = localStorage.getItem('juli_theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+    }
+})();
         let historialCardsPage = 1;
         const CARDS_PER_PAGE = 5;
         let historialCardsFiltrado = null;
         let idRemesaEditando = null;
+        let myChart = null;
 
         function mostrarToast(mensaje) {
             const toast = document.getElementById('toast');
@@ -183,63 +225,62 @@
                 toast.classList.remove('show');
             }, 3000);
         }
+
         function exportarDatos() {
-    try {
-        const datos = {
-            remesas: JSON.parse(localStorage.getItem('juli_remesas') || '[]'),
-            clientes: JSON.parse(localStorage.getItem('juli_clientes') || '[]'),
-            conciliaciones: JSON.parse(localStorage.getItem('juli_conciliaciones') || '[]')
-        };
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datos, null, 2));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", `julicash_backup_${new Date().toISOString().split('T')[0]}.json`);
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
-        mostrarToast("Copia de seguridad descargada.");
-    } catch (error) {
-        console.error("Error al exportar:", error);
-        mostrarToast("No se pudieron exportar los datos.");
-    }
-}
-
-function iniciarImportacion() {
-    document.getElementById('importadorArchivo').click();
-}
-
-function importarDesdeArchivo(event) {
-    const archivo = event.target.files[0];
-    if (!archivo) return;
-    
-    if (!confirm('¿Estás realmente seguro?\n\nEsta acción reemplazará TODOS tus datos actuales y no se puede deshacer.')) {
-        event.target.value = null;
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const datos = JSON.parse(e.target.result);
-            if (datos && typeof datos.remesas === 'object' && typeof datos.clientes === 'object' && typeof datos.conciliaciones === 'object') {
-                localStorage.setItem('juli_remesas', JSON.stringify(datos.remesas));
-                localStorage.setItem('juli_clientes', JSON.stringify(datos.clientes));
-                localStorage.setItem('juli_conciliaciones', JSON.stringify(datos.conciliaciones));
-                
-                mostrarToast('¡Datos importados con éxito! Reiniciando...');
-                setTimeout(() => window.location.reload(), 1500);
-            } else {
-                mostrarToast('Error: El archivo no parece válido.');
+            try {
+                const datos = {
+                    remesas: JSON.parse(localStorage.getItem('juli_remesas') || '[]'),
+                    clientes: JSON.parse(localStorage.getItem('juli_clientes') || '[]'),
+                    conciliaciones: JSON.parse(localStorage.getItem('juli_conciliaciones') || '[]')
+                };
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datos, null, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", `julicash_backup_${new Date().toISOString().split('T')[0]}.json`);
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+                mostrarToast("Copia de seguridad descargada.");
+            } catch (error) {
+                console.error("Error al exportar:", error);
+                mostrarToast("No se pudieron exportar los datos.");
             }
-        } catch (error) {
-            console.error("Error al importar el archivo:", error);
-            mostrarToast('Error: El archivo está dañado.');
-        } finally {
-            event.target.value = null;
         }
-    };
-    reader.readAsText(archivo);
-}
+
+        function iniciarImportacion() {
+            document.getElementById('importadorArchivo').click();
+        }
+
+        function importarDesdeArchivo(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+            if (!confirm('¿Estás realmente seguro?\n\nEsta acción reemplazará TODOS tus datos actuales y no se puede deshacer.')) {
+                event.target.value = null;
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const datos = JSON.parse(e.target.result);
+                    if (datos && typeof datos.remesas === 'object' && typeof datos.clientes === 'object' && typeof datos.conciliaciones === 'object') {
+                        localStorage.setItem('juli_remesas', JSON.stringify(datos.remesas));
+                        localStorage.setItem('juli_clientes', JSON.stringify(datos.clientes));
+                        localStorage.setItem('juli_conciliaciones', JSON.stringify(datos.conciliaciones));
+                        mostrarToast('¡Datos importados con éxito! Reiniciando...');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        mostrarToast('Error: El archivo no parece válido.');
+                    }
+                } catch (error) {
+                    console.error("Error al importar el archivo:", error);
+                    mostrarToast('Error: El archivo está dañado.');
+                } finally {
+                    event.target.value = null;
+                }
+            };
+            reader.readAsText(archivo);
+        }
+
         function renderDashboard() {
             let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
             let now = new Date();
@@ -256,6 +297,62 @@ function importarDesdeArchivo(event) {
             document.getElementById('dash-recibido').textContent = recibido.toFixed(2);
             document.getElementById('dash-entregado').textContent = entregado.toFixed(2);
             document.getElementById('dash-ganancia').textContent = ganancia.toFixed(2);
+            const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const labels = [];
+            const data = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const y = d.getFullYear();
+                const m = (d.getMonth() + 1).toString().padStart(2, '0');
+                labels.push(meses[d.getMonth()]);
+                const gananciaMes = historial
+                    .filter(r => r.fecha && r.fecha.startsWith(`${y}-${m}`))
+                    .reduce((total, r) => total + r.ganancia, 0);
+                data.push(gananciaMes);
+            }
+            const ctx = document.getElementById('gananciasChart').getContext('2d');
+            if (myChart) {
+                myChart.destroy();
+            }
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Ganancia',
+                        data: data,
+                        backgroundColor: '#24fce640',
+                        borderColor: '#24fce6',
+                        borderWidth: 1.5,
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#191a2c',
+                            titleColor: '#24fce6',
+                            bodyColor: '#e8f9ff',
+                            borderColor: '#24fce680',
+                            borderWidth: 1
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#fafbffbb' },
+                            grid: { color: '#26ffe620' }
+                        },
+                        x: {
+                            ticks: { color: '#fafbffbb' },
+                            grid: { color: 'transparent' }
+                        }
+                    }
+                }
+            });
         }
 
         function renderHistorial(datos = null, append = false) {
@@ -326,6 +423,9 @@ function importarDesdeArchivo(event) {
         function mostrarUltimas5() {
             historialCardsPage = 1;
             historialCardsFiltrado = null;
+            document.getElementById('filtroRemitente').value = '';
+            document.getElementById('filtroDesde').value = '';
+            document.getElementById('filtroHasta').value = '';
             renderHistorial();
         }
 
@@ -334,6 +434,10 @@ function importarDesdeArchivo(event) {
         function showStep() {
             for (let i = 1; i <= 6; i++) document.getElementById('step-' + i).classList.remove('active');
             document.getElementById('step-' + step).classList.add('active');
+            for (let i = 1; i <= 6; i++) {
+                document.getElementById('indicator-' + i).classList.remove('active');
+            }
+            document.getElementById('indicator-' + step).classList.add('active');
         }
         function nextStep() {
             if (step < 6) { step++; showStep(); if (step === 5) mostrarGanancia(); if (step === 6) mostrarGananciaFinal(); }
@@ -362,36 +466,45 @@ function importarDesdeArchivo(event) {
         }
 
         function guardarRemesa() {
-            const fecha = document.getElementById('fecha').value;
-            const remitente = document.getElementById('remitente').value.trim();
-            const montoRecibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
-            const destinatario = document.getElementById('destinatario').value.trim();
-            const montoEntregado = parseFloat(document.getElementById('montoEntregado').value) || 0;
-            const ganancia = montoRecibido - montoEntregado;
-            if (!fecha || !remitente || !destinatario || montoRecibido <= 0 || montoEntregado <= 0) {
-                mostrarToast("Completa todos los campos correctamente.");
-                return;
-            }
-            let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
-            if (idRemesaEditando !== null) {
-                const index = historial.findIndex(r => r.id === idRemesaEditando);
-                if (index !== -1) {
-                    historial[index] = { ...historial[index], fecha, envia: remitente, recibe: destinatario, montoRecibido, montoEntregado, ganancia };
-                    mostrarToast('¡Remesa actualizada con éxito!');
-                }
-            } else {
-                const remesa = { fecha, envia: remitente, recibe: destinatario, montoRecibido, montoEntregado, ganancia, conciliada: false, id: Date.now() };
-                historial.push(remesa);
-                mostrarToast('¡Remesa registrada con éxito!');
-            }
-            localStorage.setItem('juli_remesas', JSON.stringify(historial));
-            agregarCliente(remitente);
-            idRemesaEditando = null;
-            document.querySelector('#step-6 button').textContent = 'Guardar remesa';
-            document.getElementById('remesaForm').reset();
-            document.getElementById('fecha').valueAsDate = new Date();
-            mostrarPantalla('dashboard');
+    const fecha = document.getElementById('fecha').value;
+    const remitente = document.getElementById('remitente').value.trim();
+    const montoRecibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
+    const destinatario = document.getElementById('destinatario').value.trim();
+    const montoEntregado = parseFloat(document.getElementById('montoEntregado').value) || 0;
+    const ganancia = montoRecibido - montoEntregado;
+
+    if (!fecha || !remitente || !destinatario || montoRecibido <= 0 || montoEntregado <= 0) {
+        mostrarToast("Completa todos los campos correctamente.");
+        return;
+    }
+
+    let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+    if (idRemesaEditando !== null) {
+        const index = historial.findIndex(r => r.id === idRemesaEditando);
+        if (index !== -1) {
+            historial[index] = { ...historial[index], fecha, envia: remitente, recibe: destinatario, montoRecibido, montoEntregado, ganancia };
+            mostrarToast('¡Remesa actualizada con éxito!');
         }
+    } else {
+        const remesa = { fecha, envia: remitente, recibe: destinatario, montoRecibido, montoEntregado, ganancia, conciliada: false, id: Date.now() };
+        historial.push(remesa);
+        mostrarToast('¡Remesa registrada con éxito!');
+    }
+
+    localStorage.setItem('juli_remesas', JSON.stringify(historial));
+    agregarCliente(remitente);
+
+    idRemesaEditando = null;
+    document.querySelector('#step-6 button').textContent = 'Guardar remesa';
+    document.getElementById('remesaForm').reset();
+    document.getElementById('fecha').valueAsDate = new Date();
+    document.getElementById('destinatarios-sugeridos').innerHTML = ''; // <-- LÍNEA AÑADIDA
+    
+    step = 1;
+    showStep(); 
+    
+    mostrarPantalla('dashboard');
+}
 
         function eliminarRemesa(id) {
             if (!confirm('¿Estás seguro de que quieres eliminar esta remesa? Esta acción no se puede deshacer.')) {
@@ -429,34 +542,26 @@ function importarDesdeArchivo(event) {
         }
 
         function mostrarPantalla(nombre) {
-    document.querySelectorAll('.pantalla').forEach(div => div.classList.remove('active'));
-    document.getElementById('pantalla-' + nombre).classList.add('active');
-    document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
-    document.getElementById('menu-' + nombre).classList.add('active');
-    
-    if (nombre === 'dashboard') renderDashboard();
-    if (nombre === 'historial') { historialCardsPage = 1; renderHistorial(); }
-    if (nombre === 'clientes') renderClientes();
-    
-    // Esta línea es importante para que los nuevos iconos se muestren
-    feather.replace();
-}
+            document.querySelectorAll('.pantalla').forEach(div => div.classList.remove('active'));
+            document.getElementById('pantalla-' + nombre).classList.add('active');
+            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('menu-' + nombre).classList.add('active');
+            feather.replace();
+        }
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('importadorArchivo').addEventListener('change', importarDesdeArchivo);
-    mostrarPantalla('dashboard');
-});
         function agregarCliente(nombre) {
             nombre = nombre.trim();
             if (!nombre) return;
             let clientes = JSON.parse(localStorage.getItem('juli_clientes') || '[]');
-            if (!clientes.includes(nombre)) {
-                clientes.push(nombre);
+            const existe = clientes.some(c => c.nombre.toLowerCase() === nombre.toLowerCase());
+            if (!existe) {
+                clientes.push({ nombre: nombre, telefono: "" });
                 localStorage.setItem('juli_clientes', JSON.stringify(clientes));
             }
         }
+
         function renderClientes() {
-            let clientes = JSON.parse(localStorage.getItem('juli_clientes') || '[]');
+            let clientes = JSON.parse(localStorage.getItem('juli_clientes') || '[]').sort((a, b) => a.nombre.localeCompare(b.nombre));
             let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
             if (clientes.length === 0) {
                 document.getElementById('listaClientes').innerHTML = "<li style='text-align:center;color:#ccc;'>Aún no hay clientes registrados.</li>";
@@ -464,13 +569,45 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             let html = "";
             clientes.forEach(cliente => {
-                let remesasCliente = historial.filter(r => r.envia === cliente);
-                html += `<li>
-                    <span class="label">${cliente}</span>
+                let remesasCliente = historial.filter(r => r.envia === cliente.nombre);
+                html += `<li onclick="verHistorialCliente('${cliente.nombre}')">
+                    <span class="label">${cliente.nombre}</span>
                     <span style="color:#fcff64;font-size:0.99rem;">${remesasCliente.length} envíos</span>
                 </li>`;
             });
             document.getElementById('listaClientes').innerHTML = html;
+        }
+
+        function verHistorialCliente(nombreCliente) {
+            document.getElementById('filtroRemitente').value = nombreCliente;
+            document.getElementById('filtroDesde').value = '';
+            document.getElementById('filtroHasta').value = '';
+            filtrarHistorial();
+            mostrarPantalla('historial');
+        }
+        function actualizarSugerenciasDestinatarios() {
+    const remitenteNombre = document.getElementById('remitente').value.trim();
+    const datalist = document.getElementById('destinatarios-sugeridos');
+    
+    // Si no hay nombre de remitente, limpiamos la lista y salimos
+    if (!remitenteNombre) {
+        datalist.innerHTML = '';
+        return;
+    }
+
+    // Buscamos en el historial las remesas de este cliente
+    let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+    let remesasCliente = historial.filter(r => r.envia.toLowerCase() === remitenteNombre.toLowerCase());
+
+    // Creamos una lista única de destinatarios para ese cliente
+    let destinatariosUnicos = [...new Set(remesasCliente.map(r => r.recibe.trim()))].sort();
+
+    // Llenamos el datalist con las sugerencias
+    let html = "";
+    destinatariosUnicos.forEach(dest => {
+        html += `<option value="${dest}"></option>`;
+    });
+    datalist.innerHTML = html;
         }
         function mostrarTransConciliar() {
             let ini = document.getElementById('fechaIniC').value;
@@ -520,7 +657,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         function renderListaConciliaciones() {
             let log = JSON.parse(localStorage.getItem('juli_conciliaciones') || '[]');
-            let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
             if (log.length === 0) {
                 document.getElementById('listaConciliacionesCont').innerHTML = "<div style='color:#ccc;margin-top:10px;'>No hay conciliaciones registradas.</div>";
                 return;
@@ -548,14 +684,139 @@ document.addEventListener('DOMContentLoaded', function() {
             trans.forEach(rem => {
                 html += `<tr><td>${rem.fecha}</td><td>${rem.envia}</td><td>${rem.recibe}</td><td>$${rem.montoRecibido.toFixed(2)}</td><td>$${rem.montoEntregado.toFixed(2)}</td></tr>`;
             });
-            html += "</tbody></table>";
+            html += `</tbody></table>`;
             document.getElementById('listaConciliacionesCont').innerHTML = html + `<button class="boton-neon" style="margin-top:10px;" onclick="renderListaConciliaciones()">Regresar</button>`;
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('importadorArchivo').addEventListener('change', importarDesdeArchivo);
+            renderDashboard(); // Render the dashboard on initial load
+            mostrarPantalla('dashboard');
+        });
+
+        function abrirModalContactos() {
+            renderListaContactos();
+            document.getElementById('modalContactos').style.display = 'flex';
+            feather.replace();
+        }
+
+        function cerrarModalContactos() {
+            document.getElementById('modalContactos').style.display = 'none';
+            document.getElementById('listaContactosCont').style.display = 'block';
+            document.getElementById('detalleContactoCont').style.display = 'none';
+            document.getElementById('detalleContactoCont').innerHTML = '';
+        }
+
+        function renderListaContactos() {
+            let clientes = JSON.parse(localStorage.getItem('juli_clientes') || '[]').sort((a, b) => a.nombre.localeCompare(b.nombre));
+            let html = '<h3 style="color:#26ffe6; text-align:center; margin-top:0;">Mis Contactos</h3>';
+            if (clientes.length === 0) {
+                html += "<div style='color:#ccc;text-align:center;margin-top:15px;'>No hay contactos guardados.</div>";
+            } else {
+                clientes.forEach(cliente => {
+                    html += `<div class="contacto-item" onclick="verDetalleContacto('${cliente.nombre}')">
+                        <div class="contacto-nombre">${cliente.nombre}</div>
+                        <div style="font-size:0.9rem; color:#fafbffbb;">${cliente.telefono || 'Sin teléfono'}</div>
+                    </div>`;
+                });
+            }
+            document.getElementById('listaContactosCont').innerHTML = html;
+            document.getElementById('listaContactosCont').style.display = 'block';
+            document.getElementById('detalleContactoCont').style.display = 'none';
+        }
+
+        function verDetalleContacto(nombreCliente) {
+            let clientes = JSON.parse(localStorage.getItem('juli_clientes') || '[]');
+            const cliente = clientes.find(c => c.nombre === nombreCliente);
+            if (!cliente) return;
+            let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+            let remesasCliente = historial.filter(r => r.envia === nombreCliente);
+            let destinatariosUnicos = [...new Set(remesasCliente.map(r => r.recibe.trim()))].sort();
+            let html = `
+                <button class="boton-neon" style="font-size:0.9rem; padding: 4px 10px;" onclick="renderListaContactos()"><i data-feather="arrow-left"></i> Volver</button>
+                <div class="detalle-header">
+                    <div class="nombre-cliente">${cliente.nombre}</div>
+                    <label style="align-self:center;">Teléfono del Cliente</label>
+                    <div class="input-group">
+                        <input type="tel" id="tel-${cliente.nombre.replace(/\s/g, '')}" value="${cliente.telefono || ''}" placeholder="Añadir teléfono">
+                        <button class="boton-neon" style="padding: 7px;" onclick="guardarTelefonoCliente('${cliente.nombre}')"><i data-feather="save"></i></button>
+                    </div>
+                </div>
+                <div class="destinatarios-lista">
+                    <h4>Destinatarios Frecuentes</h4>`;
+            if (destinatariosUnicos.length > 0) {
+                let destinatariosData = JSON.parse(localStorage.getItem(`destinatarios_${cliente.nombre.replace(/\s/g, '')}`) || '{}');
+                destinatariosUnicos.forEach(dest => {
+                    const telDest = destinatariosData[dest] || '';
+                    html += `
+                        <div class="destinatario-item">
+                            <div class="nombre">${dest}</div>
+                            <div class="input-group">
+                                <input type="tel" id="tel-${dest.replace(/\s/g, '')}" value="${telDest}" placeholder="Añadir teléfono">
+                                <button class="boton-neon" style="padding: 7px;" onclick="guardarTelefonoDestinatario('${cliente.nombre}', '${dest}')"><i data-feather="save"></i></button>
+                            </div>
+                        </div>`;
+                });
+            } else {
+                html += "<div style='color:#ccc;text-align:center;'>No hay destinatarios registrados para este cliente.</div>";
+            }
+            html += `</div>`;
+            document.getElementById('detalleContactoCont').innerHTML = html;
+            document.getElementById('listaContactosCont').style.display = 'none';
+            document.getElementById('detalleContactoCont').style.display = 'block';
+            feather.replace();
+        }
+
+        function guardarTelefonoCliente(nombreCliente) {
+            let clientes = JSON.parse(localStorage.getItem('juli_clientes') || '[]');
+            const index = clientes.findIndex(c => c.nombre === nombreCliente);
+            if (index !== -1) {
+                const nuevoTel = document.getElementById(`tel-${nombreCliente.replace(/\s/g, '')}`).value;
+                clientes[index].telefono = nuevoTel.trim();
+                localStorage.setItem('juli_clientes', JSON.stringify(clientes));
+                mostrarToast('Teléfono guardado.');
+            }
+        }
+
+        function guardarTelefonoDestinatario(nombreCliente, nombreDest) {
+            const key = `destinatarios_${nombreCliente.replace(/\s/g, '')}`;
+            let destinatariosData = JSON.parse(localStorage.getItem(key) || '{}');
+            const nuevoTel = document.getElementById(`tel-${nombreDest.replace(/\s/g, '')}`).value;
+            destinatariosData[nombreDest] = nuevoTel.trim();
+            localStorage.setItem(key, JSON.stringify(destinatariosData));
+            mostrarToast('Teléfono del destinatario guardado.');
+        }
+function toggleTheme() {
+    document.body.classList.toggle('light-theme');
+    const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
+    localStorage.setItem('juli_theme', theme);
+    updateThemeIcon(theme);
+    feather.replace(); // Actualiza el icono
+}
+
+function updateThemeIcon(theme) {
+    const iconContainer = document.getElementById('theme-toggle-icon');
+    if (iconContainer) { // Solo si el icono existe en la pantalla actual
+        if (theme === 'light') {
+            iconContainer.innerHTML = '<i data-feather="moon"></i>';
+        } else {
+            iconContainer.innerHTML = '<i data-feather="sun"></i>';
+        }
+    }
+}
+        // Initialize the app
         showStep();
         renderDashboard();
         document.addEventListener('DOMContentLoaded', function() {
-            mostrarPantalla('dashboard');
-        });
+    document.getElementById('importadorArchivo').addEventListener('change', importarDesdeArchivo);
+    
+    // Configurar el tema al cargar
+    const currentTheme = localStorage.getItem('juli_theme') || 'dark';
+    updateThemeIcon(currentTheme);
+
+    renderDashboard(); // Render the dashboard on initial load
+    mostrarPantalla('dashboard');
+});
     </script>
     <script>
       if ('serviceWorker' in navigator) {
