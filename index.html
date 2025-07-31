@@ -138,10 +138,21 @@
             <span>Conciliar</span>
         </div>
     </div>
+    <div id="toast" class="toast">Mensaje</div>
     <script>
         let historialCardsPage = 1;
         const CARDS_PER_PAGE = 5;
         let historialCardsFiltrado = null;
+        let idRemesaEditando = null;
+
+        function mostrarToast(mensaje) {
+            const toast = document.getElementById('toast');
+            toast.textContent = mensaje;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
 
         function renderDashboard() {
             let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
@@ -162,42 +173,37 @@
         }
 
         function renderHistorial(datos = null, append = false) {
-    let historial = datos || JSON.parse(localStorage.getItem('juli_remesas') || '[]');
-    if (!datos) {
-        historialCardsFiltrado = null;
-        historial = historial.slice(-CARDS_PER_PAGE * historialCardsPage);
-    } else {
-        historialCardsFiltrado = historial;
-        historial = historial.slice(-(CARDS_PER_PAGE * historialCardsPage));
-    }
-    if (historial.length === 0) {
-        document.getElementById('tablaHistorialCont').innerHTML = "<div style='color:#ccc;text-align:center;margin-top:8px;'>No hay remesas registradas.</div>";
-        return;
-    }
-    let html = "";
-    historial.slice().reverse().forEach(rem => {
-        html += `<div class="historial-card">
-            ${rem.conciliada ? '<span class="historial-check">✔️</span>' : ''}
-            <div class="fecha">${formatearFecha(rem.fecha)}</div>
-            <div class="historial-row"><span class="historial-label">Envia</span><span>${rem.envia || ''}</span><span class="historial-cantidad">$${rem.montoRecibido !== undefined ? rem.montoRecibido.toFixed(2) : ''}</span></div>
-            <div class="historial-row"><span class="historial-label">Recibe</span><span>${rem.recibe || ''}</span><span class="historial-cantidad">$${rem.montoEntregado !== undefined ? rem.montoEntregado.toFixed(2) : ''}</span></div>
-            <div class="historial-ganancia">Ganancia: $${rem.ganancia !== undefined ? rem.ganancia.toFixed(2) : ''}</div>
-            <div class="historial-acciones">
-                <button class="boton-accion" onclick="iniciarEdicion(${rem.id})">✏️ Editar</button>
-                <button class="boton-accion-eliminar" onclick="eliminarRemesa(${rem.id})">🗑️ Eliminar</button>
-            </div>
-        </div>`;
-    });
-
-    let totalRemesas = datos ? datos.length : JSON.parse(localStorage.getItem('juli_remesas') || '[]').length;
-    let hayMas = (historialCardsPage * CARDS_PER_PAGE) < totalRemesas;
-
-    html += hayMas
-        ? `<button class="boton-neon" style="width:100%;margin-top:5px;" onclick="verMasHistorial()">Ver más</button>`
-        : '';
-
-    document.getElementById('tablaHistorialCont').innerHTML = html;
-}
+            let historial = datos || JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+            if (!datos) {
+                historialCardsFiltrado = null;
+                historial = historial.slice(-CARDS_PER_PAGE * historialCardsPage);
+            } else {
+                historialCardsFiltrado = historial;
+                historial = historial.slice(-(CARDS_PER_PAGE * historialCardsPage));
+            }
+            if (historial.length === 0) {
+                document.getElementById('tablaHistorialCont').innerHTML = "<div style='color:#ccc;text-align:center;margin-top:8px;'>No hay remesas registradas.</div>";
+                return;
+            }
+            let html = "";
+            historial.slice().reverse().forEach(rem => {
+                html += `<div class="historial-card">
+                    ${rem.conciliada ? '<span class="historial-check">✔️</span>' : ''}
+                    <div class="fecha">${formatearFecha(rem.fecha)}</div>
+                    <div class="historial-row"><span class="historial-label">Envia</span><span>${rem.envia || ''}</span><span class="historial-cantidad">$${rem.montoRecibido !== undefined ? rem.montoRecibido.toFixed(2) : ''}</span></div>
+                    <div class="historial-row"><span class="historial-label">Recibe</span><span>${rem.recibe || ''}</span><span class="historial-cantidad">$${rem.montoEntregado !== undefined ? rem.montoEntregado.toFixed(2) : ''}</span></div>
+                    <div class="historial-ganancia">Ganancia: $${rem.ganancia !== undefined ? rem.ganancia.toFixed(2) : ''}</div>
+                    <div class="historial-acciones">
+                        <button class="boton-accion" onclick="iniciarEdicion(${rem.id})">✏️ Editar</button>
+                        <button class="boton-accion-eliminar" onclick="eliminarRemesa(${rem.id})">🗑️ Eliminar</button>
+                    </div>
+                </div>`;
+            });
+            let totalRemesas = datos ? datos.length : JSON.parse(localStorage.getItem('juli_remesas') || '[]').length;
+            let hayMas = (historialCardsPage * CARDS_PER_PAGE) < totalRemesas;
+            html += hayMas ? `<button class="boton-neon" style="width:100%;margin-top:5px;" onclick="verMasHistorial()">Ver más</button>` : '';
+            document.getElementById('tablaHistorialCont').innerHTML = html;
+        }
 
         function verMasHistorial() {
             historialCardsPage++;
@@ -244,18 +250,10 @@
             document.getElementById('step-' + step).classList.add('active');
         }
         function nextStep() {
-            if (step < 6) {
-                step++;
-                showStep();
-                if (step === 5) mostrarGanancia();
-                if (step === 6) mostrarGananciaFinal();
-            }
+            if (step < 6) { step++; showStep(); if (step === 5) mostrarGanancia(); if (step === 6) mostrarGananciaFinal(); }
         }
         function prevStep() {
-            if (step > 1) {
-                step--;
-                showStep();
-            }
+            if (step > 1) { step--; showStep(); }
         }
         function mostrarGanancia() {
             const recibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
@@ -276,113 +274,81 @@
             const info = document.getElementById('gananciaFinal');
             info.textContent = `Ganancia final de la operación: $${ganancia.toFixed(2)}`;
         }
+
         function guardarRemesa() {
-    const fecha = document.getElementById('fecha').value;
-    const remitente = document.getElementById('remitente').value.trim();
-    const montoRecibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
-    const destinatario = document.getElementById('destinatario').value.trim();
-    const montoEntregado = parseFloat(document.getElementById('montoEntregado').value) || 0;
-    const ganancia = montoRecibido - montoEntregado;
-
-    if (!fecha || !remitente || !destinatario || montoRecibido <= 0 || montoEntregado <= 0) {
-        alert("Completa todos los campos correctamente.");
-        return;
-    }
-
-    let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
-
-    if (idRemesaEditando !== null) {
-        // --- MODO EDICIÓN ---
-        const index = historial.findIndex(r => r.id === idRemesaEditando);
-        if (index !== -1) {
-            historial[index] = {
-                ...historial[index], // Mantenemos propiedades como 'conciliada' y el 'id' original
-                fecha,
-                envia: remitente,
-                recibe: destinatario,
-                montoRecibido,
-                montoEntregado,
-                ganancia,
-            };
-            alert('¡Remesa actualizada con éxito!');
+            const fecha = document.getElementById('fecha').value;
+            const remitente = document.getElementById('remitente').value.trim();
+            const montoRecibido = parseFloat(document.getElementById('montoRecibido').value) || 0;
+            const destinatario = document.getElementById('destinatario').value.trim();
+            const montoEntregado = parseFloat(document.getElementById('montoEntregado').value) || 0;
+            const ganancia = montoRecibido - montoEntregado;
+            if (!fecha || !remitente || !destinatario || montoRecibido <= 0 || montoEntregado <= 0) {
+                mostrarToast("Completa todos los campos correctamente.");
+                return;
+            }
+            let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+            if (idRemesaEditando !== null) {
+                const index = historial.findIndex(r => r.id === idRemesaEditando);
+                if (index !== -1) {
+                    historial[index] = { ...historial[index], fecha, envia: remitente, recibe: destinatario, montoRecibido, montoEntregado, ganancia };
+                    mostrarToast('¡Remesa actualizada con éxito!');
+                }
+            } else {
+                const remesa = { fecha, envia: remitente, recibe: destinatario, montoRecibido, montoEntregado, ganancia, conciliada: false, id: Date.now() };
+                historial.push(remesa);
+                mostrarToast('¡Remesa registrada con éxito!');
+            }
+            localStorage.setItem('juli_remesas', JSON.stringify(historial));
+            agregarCliente(remitente);
+            idRemesaEditando = null;
+            document.querySelector('#step-6 button').textContent = 'Guardar remesa';
+            document.getElementById('remesaForm').reset();
+            document.getElementById('fecha').valueAsDate = new Date();
+            mostrarPantalla('dashboard');
         }
-    } else {
-        // --- MODO CREACIÓN (como estaba antes) ---
-        const remesa = {
-            fecha,
-            envia: remitente,
-            recibe: destinatario,
-            montoRecibido,
-            montoEntregado,
-            ganancia,
-            conciliada: false,
-            id: Date.now()
-        };
-        historial.push(remesa);
-        alert('¡Remesa registrada con éxito!');
-    }
 
-    localStorage.setItem('juli_remesas', JSON.stringify(historial));
-    agregarCliente(remitente);
+        function eliminarRemesa(id) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta remesa? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+            const nuevoHistorial = historial.filter(remesa => remesa.id !== id);
+            localStorage.setItem('juli_remesas', JSON.stringify(nuevoHistorial));
+            mostrarToast('Remesa eliminada con éxito.');
+            if (historialCardsFiltrado) {
+                filtrarHistorial();
+            } else {
+                renderHistorial();
+            }
+            renderDashboard();
+        }
 
-    // Reseteamos el estado de edición
-    idRemesaEditando = null;
-    document.querySelector('#step-6 button').textContent = 'Guardar remesa';
-    document.getElementById('remesaForm').reset();
-    document.getElementById('fecha').valueAsDate = new Date();
-    
-    // Llevamos al dashboard
-    mostrarPantalla('dashboard');
-}
-let idRemesaEditando = null;
+        function iniciarEdicion(id) {
+            let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
+            const remesa = historial.find(r => r.id === id);
+            if (!remesa) {
+                mostrarToast('Error: No se encontró la remesa.');
+                return;
+            }
+            idRemesaEditando = id;
+            document.getElementById('fecha').value = remesa.fecha;
+            document.getElementById('remitente').value = remesa.envia;
+            document.getElementById('montoRecibido').value = remesa.montoRecibido;
+            document.getElementById('destinatario').value = remesa.recibe;
+            document.getElementById('montoEntregado').value = remesa.montoEntregado;
+            document.querySelector('#step-6 button').textContent = 'Actualizar remesa';
+            mostrarPantalla('registro');
+            step = 1;
+            showStep();
+        }
 
-function eliminarRemesa(id) {
-    if (!confirm('¿Estás seguro de que quieres eliminar esta remesa? Esta acción no se puede deshacer.')) {
-        return;
-    }
-    let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
-    const nuevoHistorial = historial.filter(remesa => remesa.id !== id);
-    localStorage.setItem('juli_remesas', JSON.stringify(nuevoHistorial));
-    
-    alert('Remesa eliminada con éxito.');
-    if (historialCardsFiltrado) {
-        filtrarHistorial(); // Re-filtra para actualizar la vista si hay un filtro activo
-    } else {
-        renderHistorial();
-    }
-    renderDashboard();
-}
-
-function iniciarEdicion(id) {
-    let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
-    const remesa = historial.find(r => r.id === id);
-
-    if (!remesa) {
-        alert('Error: No se encontró la remesa.');
-        return;
-    }
-
-    idRemesaEditando = id;
-
-    document.getElementById('fecha').value = remesa.fecha;
-    document.getElementById('remitente').value = remesa.envia;
-    document.getElementById('montoRecibido').value = remesa.montoRecibido;
-    document.getElementById('destinatario').value = remesa.recibe;
-    document.getElementById('montoEntregado').value = remesa.montoEntregado;
-
-    document.querySelector('#step-6 button').textContent = 'Actualizar remesa';
-    
-    mostrarPantalla('registro');
-    step = 1;
-    showStep();
-}
         function mostrarPantalla(nombre) {
             document.querySelectorAll('.pantalla').forEach(div => div.classList.remove('active'));
             document.getElementById('pantalla-' + nombre).classList.add('active');
             document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('menu-' + nombre).classList.add('active');
             if (nombre === 'dashboard') renderDashboard();
-            if (nombre === 'historial') renderHistorial();
+            if (nombre === 'historial') { historialCardsPage = 1; renderHistorial(); }
             if (nombre === 'clientes') renderClientes();
         }
         function agregarCliente(nombre) {
@@ -426,48 +392,27 @@ function iniciarEdicion(id) {
             }
             let html = `<div style="margin:8px 0 10px 0;font-weight:bold;color:#fcff64;">${trans.length} remesas encontradas</div>`;
             html += `<table class="tabla-historial" style="margin:0 auto;">
-                <thead>
-                    <tr>
-                        <th>Fecha</th><th>Envia</th><th>Recibe</th><th>Recibido</th><th>Entregado</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+                <thead><tr><th>Fecha</th><th>Envia</th><th>Recibe</th><th>Recibido</th><th>Entregado</th></tr></thead><tbody>`;
             trans.forEach(rem => {
-                html += `<tr>
-                    <td>${rem.fecha}</td>
-                    <td>${rem.envia}</td>
-                    <td>${rem.recibe}</td>
-                    <td>$${rem.montoRecibido.toFixed(2)}</td>
-                    <td>$${rem.montoEntregado.toFixed(2)}</td>
-                </tr>`;
+                html += `<tr><td>${rem.fecha}</td><td>${rem.envia}</td><td>${rem.recibe}</td><td>$${rem.montoRecibido.toFixed(2)}</td><td>$${rem.montoEntregado.toFixed(2)}</td></tr>`;
             });
-            html += `</tbody></table>
-                <button class="boton-neon" onclick="conciliarTransacciones('${ini}','${fin}')">Conciliar todas</button>`;
+            html += `</tbody></table><button class="boton-neon" onclick="conciliarTransacciones('${ini}','${fin}')">Conciliar todas</button>`;
             document.getElementById('transConciliarCont').innerHTML = html;
         }
         function conciliarTransacciones(ini, fin) {
             let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
             let conciliadas = [];
             for (let i = 0; i < historial.length; i++) {
-                if (
-                    historial[i].fecha >= ini &&
-                    historial[i].fecha <= fin &&
-                    !historial[i].conciliada
-                ) {
+                if (historial[i].fecha >= ini && historial[i].fecha <= fin && !historial[i].conciliada) {
                     historial[i].conciliada = true;
                     conciliadas.push(historial[i].id);
                 }
             }
             localStorage.setItem('juli_remesas', JSON.stringify(historial));
             let log = JSON.parse(localStorage.getItem('juli_conciliaciones') || '[]');
-            log.push({
-                fecha: new Date().toISOString(),
-                rango: {ini, fin},
-                ids: conciliadas,
-                total: conciliadas.length
-            });
+            log.push({ fecha: new Date().toISOString(), rango: {ini, fin}, ids: conciliadas, total: conciliadas.length });
             localStorage.setItem('juli_conciliaciones', JSON.stringify(log));
-            alert("¡Remesas conciliadas con éxito!");
+            mostrarToast("¡Remesas conciliadas con éxito!");
             mostrarTransConciliar();
             renderHistorial();
         }
@@ -506,13 +451,7 @@ function iniciarEdicion(id) {
             let trans = historial.filter(r => arr.includes(r.id));
             let html = "<table class='tabla-historial' style='margin:7px auto;'><thead><tr><th>Fecha</th><th>Envia</th><th>Recibe</th><th>Recibido</th><th>Entregado</th></tr></thead><tbody>";
             trans.forEach(rem => {
-                html += `<tr>
-                    <td>${rem.fecha}</td>
-                    <td>${rem.envia}</td>
-                    <td>${rem.recibe}</td>
-                    <td>$${rem.montoRecibido.toFixed(2)}</td>
-                    <td>$${rem.montoEntregado.toFixed(2)}</td>
-                </tr>`;
+                html += `<tr><td>${rem.fecha}</td><td>${rem.envia}</td><td>${rem.recibe}</td><td>$${rem.montoRecibido.toFixed(2)}</td><td>$${rem.montoEntregado.toFixed(2)}</td></tr>`;
             });
             html += "</tbody></table>";
             document.getElementById('listaConciliacionesCont').innerHTML = html + `<button class="boton-neon" style="margin-top:10px;" onclick="renderListaConciliaciones()">Regresar</button>`;
