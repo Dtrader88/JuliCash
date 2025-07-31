@@ -11,6 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="stylesheet" href="style.css">
+     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -108,7 +109,32 @@
                 <button class="boton-neon boton-neon-sec" style="margin-top:15px;" onclick="abrirVerConciliaciones()">Ver conciliaciones</button>
             </div>
         </div>
+    <div class="pantalla" id="pantalla-ajustes">
+    <div class="tarjeta">
+        <h2 style="color:#82ffe2;font-size:1.2rem;margin:4px 0 15px 0;">Gestión de Datos</h2>
+        
+        <p style="font-size: 0.95rem; max-width: 300px; color: #fafbffbb; margin-bottom: 25px; line-height: 1.4;">
+            Crea una copia de seguridad de todos tus datos en un archivo, o restaura la aplicación desde una copia anterior.
+        </p>
+
+        <button class="boton-neon" onclick="exportarDatos()" style="width: 100%; max-width: 280px;">
+            <i data-feather="download"></i>
+            Exportar Copia de Seguridad
+        </button>
+        
+        <div class="danger-zone">
+            <p style="font-size: 0.9rem; max-width: 300px; color: #ffc0c0; margin-bottom: 10px;">
+                <strong>¡Atención!</strong> Importar un archivo reemplazará TODOS los datos actuales de la aplicación de forma irreversible.
+            </p>
+            <button class="boton-neon boton-neon-sec" onclick="iniciarImportacion()" style="width: 100%; max-width: 280px;">
+                 <i data-feather="upload"></i>
+                Importar desde Archivo
+            </button>
+        </div>
+        <!-- Este input está oculto, es para que el botón de arriba funcione -->
+        <input type="file" id="importadorArchivo" accept=".json" style="display: none;">
     </div>
+</div>
     <div id="modalVerConciliaciones" class="modal" style="display:none;">
         <div class="modal-content">
             <div class="modal-close" onclick="cerrarModalVerConciliaciones()">✖</div>
@@ -118,26 +144,30 @@
     </div>
     <div class="menu-inferior">
         <div class="menu-btn active" id="menu-dashboard" onclick="mostrarPantalla('dashboard')">
-            <span class="icon">🏠</span>
+            <i data-feather="home"></i>
             <span>Inicio</span>
         </div>
         <div class="menu-btn" id="menu-registro" onclick="mostrarPantalla('registro')">
-            <span class="icon">📝</span>
+            <i data-feather="edit-3"></i>
             <span>Remesa</span>
         </div>
         <div class="menu-btn" id="menu-historial" onclick="mostrarPantalla('historial')">
-            <span class="icon">📑</span>
+            <i data-feather="archive"></i>
             <span>Historial</span>
         </div>
         <div class="menu-btn" id="menu-clientes" onclick="mostrarPantalla('clientes')">
-            <span class="icon">👤</span>
+            <i data-feather="users"></i>
             <span>Clientes</span>
         </div>
         <div class="menu-btn" id="menu-conciliacion" onclick="mostrarPantalla('conciliacion')">
-            <span class="icon">✅</span>
+            <i data-feather="check-square"></i>
             <span>Conciliar</span>
         </div>
+        <div class="menu-btn" id="menu-ajustes" onclick="mostrarPantalla('ajustes')">
+        <i data-feather="settings"></i>
+        <span>Ajustes</span>
     </div>
+</div>
     <div id="toast" class="toast">Mensaje</div>
     <script>
         let historialCardsPage = 1;
@@ -153,7 +183,63 @@
                 toast.classList.remove('show');
             }, 3000);
         }
+        function exportarDatos() {
+    try {
+        const datos = {
+            remesas: JSON.parse(localStorage.getItem('juli_remesas') || '[]'),
+            clientes: JSON.parse(localStorage.getItem('juli_clientes') || '[]'),
+            conciliaciones: JSON.parse(localStorage.getItem('juli_conciliaciones') || '[]')
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datos, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `julicash_backup_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        mostrarToast("Copia de seguridad descargada.");
+    } catch (error) {
+        console.error("Error al exportar:", error);
+        mostrarToast("No se pudieron exportar los datos.");
+    }
+}
 
+function iniciarImportacion() {
+    document.getElementById('importadorArchivo').click();
+}
+
+function importarDesdeArchivo(event) {
+    const archivo = event.target.files[0];
+    if (!archivo) return;
+    
+    if (!confirm('¿Estás realmente seguro?\n\nEsta acción reemplazará TODOS tus datos actuales y no se puede deshacer.')) {
+        event.target.value = null;
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const datos = JSON.parse(e.target.result);
+            if (datos && typeof datos.remesas === 'object' && typeof datos.clientes === 'object' && typeof datos.conciliaciones === 'object') {
+                localStorage.setItem('juli_remesas', JSON.stringify(datos.remesas));
+                localStorage.setItem('juli_clientes', JSON.stringify(datos.clientes));
+                localStorage.setItem('juli_conciliaciones', JSON.stringify(datos.conciliaciones));
+                
+                mostrarToast('¡Datos importados con éxito! Reiniciando...');
+                setTimeout(() => window.location.reload(), 1500);
+            } else {
+                mostrarToast('Error: El archivo no parece válido.');
+            }
+        } catch (error) {
+            console.error("Error al importar el archivo:", error);
+            mostrarToast('Error: El archivo está dañado.');
+        } finally {
+            event.target.value = null;
+        }
+    };
+    reader.readAsText(archivo);
+}
         function renderDashboard() {
             let historial = JSON.parse(localStorage.getItem('juli_remesas') || '[]');
             let now = new Date();
@@ -343,14 +429,23 @@
         }
 
         function mostrarPantalla(nombre) {
-            document.querySelectorAll('.pantalla').forEach(div => div.classList.remove('active'));
-            document.getElementById('pantalla-' + nombre).classList.add('active');
-            document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('menu-' + nombre).classList.add('active');
-            if (nombre === 'dashboard') renderDashboard();
-            if (nombre === 'historial') { historialCardsPage = 1; renderHistorial(); }
-            if (nombre === 'clientes') renderClientes();
-        }
+    document.querySelectorAll('.pantalla').forEach(div => div.classList.remove('active'));
+    document.getElementById('pantalla-' + nombre).classList.add('active');
+    document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById('menu-' + nombre).classList.add('active');
+    
+    if (nombre === 'dashboard') renderDashboard();
+    if (nombre === 'historial') { historialCardsPage = 1; renderHistorial(); }
+    if (nombre === 'clientes') renderClientes();
+    
+    // Esta línea es importante para que los nuevos iconos se muestren
+    feather.replace();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('importadorArchivo').addEventListener('change', importarDesdeArchivo);
+    mostrarPantalla('dashboard');
+});
         function agregarCliente(nombre) {
             nombre = nombre.trim();
             if (!nombre) return;
@@ -468,6 +563,9 @@
           .then(reg => console.log('Service Worker registrado!', reg))
           .catch(err => console.error('SW error', err));
       }
+    </script>
+    <script>
+      feather.replace();
     </script>
 </body>
 </html>
